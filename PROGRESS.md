@@ -3,7 +3,7 @@
 Pembaruan: 2026-11-12 (Fase 0 — wiring & baseline fondasi)
 
 ## Fase aktif
-**Fase 0 — Fondasi** (berjalan, menunggu verifikasi CI/ekstensi penuh)
+**Fase 0 — Fondasi** (baseline lokal hijau & commit dibuat; verifikasi CI PostgreSQL/Redis dan uji dengan ekstensi PHP lengkap masih tertunda di lingkungan ini)
 
 ## Tugas
 - [x] Baca `agent.md` dan `README.md`; pahami hierarki sumber kebenaran.
@@ -18,8 +18,9 @@ Pembaruan: 2026-11-12 (Fase 0 — wiring & baseline fondasi)
 - [x] Konversi uji ke Pest (`tests/Pest.php`), baseline uji lulus lokal, endpoint health `/.well-known/petora-health` + uji.
 - [x] Kerangka modular monolith `modules/*` (19 modul, skeleton direktori + README) dan arch test Pest awal.
 - [x] CI GitHub Actions (`.github/workflows/ci.yml`) dengan PostgreSQL 17 & Redis; `docker-compose.yml` dev (app/db/redis/horizon/scheduler) dan `Dockerfile` dasar.
-- [x] `composer verify` hijau lokal (lint, analisis, uji) dengan fallback SQLite karena ekstensi `pdo_pgsql` tidak tersedia di lingkungan ini (lihat D-0009). **CI dikonfigurasi untuk PostgreSQL.**
-- [ ] Validasi hijau di CI GitHub (PostgreSQL+Redis) dan/atau lingkungan dengan ekstensi PHP lengkap; commit/tag penanda fase setelah gerbang lolos.
+- [x] `composer verify` hijau lokal (lint, analisis, uji, 6 tes/8 asersi) dengan fallback SQLite karena ekstensi `pdo_pgsql` tidak tersedia di lingkungan ini (lihat D-0009). **CI dikonfigurasi untuk PostgreSQL.**
+- [x] Commit fondasi dibuat (`523f7cc`) dan tag `v0.0.0` ditandai lokal.
+- [ ] Validasi hijau di CI GitHub (PostgreSQL+Redis) dan/atau lingkungan dengan ekstensi PHP lengkap (pcntl, exif, intl, zip, pdo_pgsql, redis).
 
 ## Utang teknis disadari
 - Ekstensi PHP belum tersedia di lingkungan dev saat ini: `pcntl`, `exif`, `intl`, `zip`, `pdo_pgsql`/`pgsql`, `redis` (ext). Instal composer awal memakai `--ignore-platform-reqs`; image/Dockerfile sudah mendeklarasikan ekstensi target. Horizon (pcntl), medialibrary (exif), Filament/Spout (intl/zip), runtime (pgsql, redis ext) memerlukan ini.
@@ -35,6 +36,6 @@ Pembaruan: 2026-11-12 (Fase 0 — wiring & baseline fondasi)
 - Uji/CI target (PostgreSQL): set `DB_CONNECTION=pgsql` ke DB uji `*_test` lalu `composer verify`
 
 ## Langkah berikutnya
-1. Jalankan/konfirmasi CI hijau di GitHub (PostgreSQL+Redis); perbaiki isu spesifik PostgreSQL bila muncul.
-2. Commit fondasi dan buat tag penanda Fase 0 (`v0.0.0`/sesuai konvensi) setelah hijau.
+1. Push `main` dan tag `v0.0.0` ke remote, lalu konfirmasi CI GitHub Actions hijau (PostgreSQL+Redis); perbaiki isu spesifik PostgreSQL bila muncul.
+2. Siapkan lingkungan dev dengan ekstensi PHP lengkap dan validasi migrasi/uji di PostgreSQL nyata.
 3. Mulai **Fase 1 — Platform inti**: Identity (Fortify/Filament auth+2FA), RBAC Spatie Permission (teams/cabang), tenancy/branch scope, pengaturan, penomoran, audit, branding/atribusi, i18n, UI kerangka, palet perintah, wizard, kesehatan sistem.
