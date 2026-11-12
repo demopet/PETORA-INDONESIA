@@ -19,7 +19,7 @@ class RolePermissionSeeder extends Seeder
 
         $permissions = [
             'platform.settings.view', 'platform.settings.manage',
-            'platform.branches.view', 'platform.branches.manage',
+            'platform.branches.view', 'platform.branches.manage', 'platform.branches.view_all',
             'platform.users.view', 'platform.users.manage',
             'platform.roles.view', 'platform.roles.manage',
             'platform.audit.view',

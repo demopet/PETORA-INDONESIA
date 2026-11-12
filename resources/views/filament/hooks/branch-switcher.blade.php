@@ -1,19 +1,30 @@
-@props(['branches' => collect(), 'currentId' => null])
+@php
+    use App\Support\BranchContext;
+    $user = auth()->user();
+    $branches = $user?->branches()->where('is_active', true)->orderBy('name')->get() ?? collect();
+    $currentId = BranchContext::currentId();
+    $isAll = BranchContext::isAllBranches();
+    $canAll = $user?->can('platform.branches.view_all');
+@endphp
 
-@if($branches->count() > 0)
-    <div class="px-2 pb-2">
-        <form method="POST" action="{{ route('branch.switch', ['branch' => $currentId ?: $branches->first()->id]) }}" x-data="{ branch: '{{ $currentId ?: $branches->first()->id }}' }" x-ref="form">
-            @csrf
-            <label class="sr-only" for="active-branch-switcher">Cabang aktif</label>
-            <select id="active-branch-switcher" name="branch" x-model="branch"
-                class="fi-input block w-full rounded-lg border-gray-300 text-sm shadow-sm dark:border-gray-600 dark:bg-gray-900"
-                @change="$refs.form.action = '{{ url('/admin/branch-switch') }}/' + branch; $refs.form.submit()">
-                @foreach($branches as $branch)
-                    <option value="{{ $branch->id }}" @selected((int)$currentId === (int)$branch->id)>
-                        {{ $branch->name }}{{ (int)$currentId === (int)$branch->id ? ' (aktif)' : '' }}
-                    </option>
-                @endforeach
-            </select>
-        </form>
+@if($user && ($branches->count() > 1 || $canAll))
+    <div class="px-2 py-1 flex items-center gap-2 text-xs">
+        <span class="text-gray-500 dark:text-gray-400">Cabang:</span>
+        @foreach($branches as $branch)
+            <form method="POST" action="{{ route('branch.switch', $branch->id) }}" class="inline">
+                @csrf
+                <button type="submit" class="px-2 py-1 rounded {{ (!$isAll && (int)$currentId === (int)$branch->id) ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200' }}">
+                    {{ $branch->code ?? $branch->name }}
+                </button>
+            </form>
+        @endforeach
+        @if($canAll)
+            <form method="POST" action="{{ route('branch.switch', 'all') }}" class="inline">
+                @csrf
+                <button type="submit" class="px-2 py-1 rounded {{ $isAll ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200' }}">
+                    Semua
+                </button>
+            </form>
+        @endif
     </div>
 @endif

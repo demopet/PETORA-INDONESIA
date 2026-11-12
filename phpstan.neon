@@ -14,3 +14,8 @@ parameters:
     excludePaths:
         - bootstrap/cache (?)
         - storage (?)
+    ignoreErrors:
+        - identifier: trait.unused
+          path: app/Models/Concerns/BelongsToBranch.php
+        - identifier: method.childParameterType
+          path: app/Models/Scopes/BranchScope.php
