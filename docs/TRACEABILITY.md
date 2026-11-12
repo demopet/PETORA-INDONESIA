@@ -4,7 +4,7 @@ Matriks fitur README → modul → status → uji. Status: belum | berjalan | se
 
 | Bagian | Fitur/Butir | Modul (rencana) | Status | Uji |
 |---|---|---|---|---|
-| 5 Struktur Bisnis: Pemilik dan Cabang | Identitas cabang (nama, kode, alamat, kontak, jam buka) | - | belum | - |
+| 5 Struktur Bisnis: Pemilik dan Cabang | Identitas cabang (nama, kode, alamat, kontak, jam buka) | Branches/Platform | berjalan | tests/Feature/PlatformFoundationTest.php |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Gudang dan stok per cabang | - | belum | - |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Kasir dan shift per cabang | - | belum | - |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Penugasan dokter/groomer/staf per cabang | - | belum | - |
@@ -13,11 +13,11 @@ Matriks fitur README → modul → status → uji. Status: belum | berjalan | se
 | 5 Struktur Bisnis: Pemilik dan Cabang | Data bersama: pelanggan & hewan lintas cabang | - | belum | - |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Data bersama: daftar produk & layanan (harga boleh beda per cabang) | - | belum | - |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Data bersama: template pesan | - | belum | - |
-| 5 Struktur Bisnis: Pemilik dan Cabang | Data bersama: peran & hak akses | - | belum | - |
+| 5 Struktur Bisnis: Pemilik dan Cabang | Data bersama: peran & hak akses | Identity/Platform | berjalan | tests/Feature/PlatformFoundationTest.php |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Data bersama: integrasi | - | belum | - |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Riwayat hewan ikut lintas cabang; pengaturan visibilitas rekam medis lintas cabang | - | belum | - |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Transfer stok antar cabang: diminta, dikirim, diterima, selisih tercatat | - | belum | - |
-| 6 Peran dan Hak Akses | Peran buatan sendiri, hak akses rinci per modul/aksi | - | belum | - |
+| 6 Peran dan Hak Akses | Peran buatan sendiri, hak akses rinci per modul/aksi | Identity | berjalan | tests/Feature/PlatformFoundationTest.php |
 | 6 Peran dan Hak Akses | Klon dan sesuaikan peran | - | belum | - |
 | 6 Peran dan Hak Akses | Satu orang banyak peran di cabang berbeda | - | belum | - |
 | 6 Peran dan Hak Akses | Cakupan data: semua cabang / cabang tertentu / milik sendiri | - | belum | - |
@@ -26,8 +26,8 @@ Matriks fitur README → modul → status → uji. Status: belum | berjalan | se
 | 6 Peran dan Hak Akses | Penyembunyian data sensitif per peran (harga beli/margin, komisi orang lain, catatan internal dokter, kontak) | - | belum | - |
 | 6 Peran dan Hak Akses | Pengecualian per orang dengan alasan tercatat | - | belum | - |
 | 6 Peran dan Hak Akses | Matriks hak akses, pencarian, peringatan berisiko tinggi, "lihat sebagai peran ini" | - | belum | - |
-| 6 Peran dan Hak Akses | Perlindungan Owner (tidak dihapus, minimal satu Owner aktif) | - | belum | - |
-| 6 Peran dan Hak Akses | Peran bawaan: Owner, Super Admin, Manajer Cabang, Kasir, Resepsionis, Dokter Hewan, Paramedis, Groomer, Petugas Penitipan, Admin Gudang, Keuangan | - | belum | - |
+| 6 Peran dan Hak Akses | Perlindungan Owner (tidak dihapus, minimal satu Owner aktif) | Identity | berjalan | app/Filament/Resources/RoleResource/Pages/EditRole.php |
+| 6 Peran dan Hak Akses | Peran bawaan: Owner, Super Admin, Manajer Cabang, Kasir, Resepsionis, Dokter Hewan, Paramedis, Groomer, Petugas Penitipan, Admin Gudang, Keuangan | Identity | berjalan | tests/Feature/PlatformFoundationTest.php |
 | 7.1 Dashboard | Ringkasan hari ini: penjualan, kunjungan, antrian, janji temu, stok menipis, obat kedaluwarsa, tagihan jatuh tempo, pembayaran online menunggu | - | belum | - |
 | 7.1 Dashboard | Tampilan per cabang atau gabungan | - | belum | - |
 | 7.1 Dashboard | Widget dapat disusun tiap pengguna | - | belum | - |
@@ -171,7 +171,7 @@ Matriks fitur README → modul → status → uji. Status: belum | berjalan | se
 | 10 Pengaturan Super Admin | Log audit, kesehatan sistem | - | belum | - |
 | 10 Pengaturan Super Admin | Impor/ekspor data, pengelolaan cadangan | - | belum | - |
 | 11 Branding dan Lisensi | Ganti nama, logo, warna aplikasi | - | belum | - |
-| 11 Branding dan Lisensi | Atribusi "Powered by PETORA INDONESIA" & hak cipta tampil di app staf, app pelanggan, dokumen cetak; tanpa opsi sembunyi | - | belum | - |
+| 11 Branding dan Lisensi | Atribusi "Powered by PETORA INDONESIA" & hak cipta tampil di app staf, app pelanggan, dokumen cetak; tanpa opsi sembunyi | Platform | berjalan | tests/Feature/BrandingAttributionTest.php, tests/Feature/AdminAccessTest.php |
 | 11 Branding dan Lisensi | Tanpa kunci lisensi/aktivasi online | - | belum | - |
 | 11 Branding dan Lisensi | Kode sumber disediakan kepada pelanggan | - | belum | - |
 | 12 Keamanan dan Privasi | Self-hosted, data milik pemilik | - | belum | - |
@@ -194,7 +194,7 @@ Matriks fitur README → modul → status → uji. Status: belum | berjalan | se
 | 13 Pengalaman Pengguna | Responsif (ponsel/tablet/komputer), aksesibilitas dasar | - | belum | - |
 | 13 Pengalaman Pengguna | Layar kosong & pesan kesalahan ramah | - | belum | - |
 | 14 Pemasangan dan Pemeliharaan | Pemasangan di server sendiri semudah mungkin (satu perintah) | - | belum | - |
-| 14 Pemasangan dan Pemeliharaan | Wizard pengaturan awal (Owner, profil bisnis, cabang, zona waktu, bahasa, pajak) tertutup permanen setelah selesai | - | belum | - |
+| 14 Pemasangan dan Pemeliharaan | Wizard pengaturan awal (Owner, profil bisnis, cabang, zona waktu, bahasa, pajak) tertutup permanen setelah selesai | Platform | berjalan | app/Filament/Pages/SetupWizard.php |
 | 14 Pemasangan dan Pemeliharaan | Wizard memeriksa app & DB; pemeriksaan alamat publik via PUBLIC_APP_URL HTTPS (pesan jujur, bukan uji webhook penyedia) | - | belum | - |
 | 14 Pemasangan dan Pemeliharaan | Data contoh dapat dimuat dan dihapus bersih | - | belum | - |
 | 14 Pemasangan dan Pemeliharaan | Pembaruan aman dengan cadangan & rollback | - | belum | - |

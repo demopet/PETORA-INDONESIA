@@ -3,7 +3,7 @@
 Pembaruan: 2026-11-12 (Fase 0 — wiring & baseline fondasi)
 
 ## Fase aktif
-**Fase 0 — Fondasi** (baseline hijau: lokal SQLite & CI GitHub Actions PostgreSQL+Redis lulus; validasi ekstensi PHP lengkap di lingkungan dev lokal masih tertunda)
+**Fase 1 — Platform inti** (berjalan, fondasi platform inti sebagian terimplementasi; baseline uji lokal hijau)
 
 ## Tugas
 - [x] Baca `agent.md` dan `README.md`; pahami hierarki sumber kebenaran.
@@ -35,6 +35,17 @@ Pembaruan: 2026-11-12 (Fase 0 — wiring & baseline fondasi)
 - Uji lokal (tanpa pdo_pgsql): `cp .env.testing .env.testing.local` opsional, atau jalankan `DB_CONNECTION=sqlite DB_DATABASE=:memory: composer verify`
 - Uji/CI target (PostgreSQL): set `DB_CONNECTION=pgsql` ke DB uji `*_test` lalu `composer verify`
 
+## Progres Fase 1 (awal)
+- [x] Skema/model inti platform: `branches`, `settings`, `document_sequences`, `branch_user`, konteks cabang aktif pada `users`; factories dasar.
+- [x] Spatie Permission `teams` diaktifkan (konteks cabang), seeder peran bawaan (Owner–Keuangan) & izin platform dasar; user aktif/nonaktif.
+- [x] Layanan inti awal: `Settings` (typed), `DocumentNumberService` (alokasi nomor transaksional/lock), `BranchContext`, `SetupState`.
+- [x] Panel Filament: login/reset/profile, branding PETORA, global search, nav grup, atribusi wajib footer "Powered by PETORA INDONESIA" (uji), middleware konteks tim permission & setup.
+- [x] Halaman/resource awal: `SetupWizard` (akun Owner+cabang+pengaturan awal), `SystemHealth`, `ManageSettings`, `BranchResource`, `UserResource`, `RoleResource`.
+- [x] i18n dasar `lang/id|en/app.php`; endpoint health `/.well-known/petora-health`.
+- [x] Uji Pest fitur platform inti (settings, penomoran, seeder peran, akses admin, atribusi) — total 13 tes/25 asersi lulus lokal (SQLite fallback D-0009).
+- [ ] Belum lengkap: integrasi Fortify/2FA penuh di alur panel, RBAC lengkap (cakupan data, batas/persetujuan/PIN, penyembunyian sensitif, matriks & "lihat sebagai peran", proteksi Owner komprehensif), tenancy/branch scope Eloquent & UI pindah cabang, penomoran per jenis/cabang terintegrasi, audit/log UI, i18n UI menyeluruh, palet perintah & kerangka UX lengkap, wizard komprehensif (pemeriksaan publik jujur, data contoh), kesehatan sistem lengkap, migrasi/uji PostgreSQL lokal.
+
 ## Langkah berikutnya
-1. Siapkan lingkungan dev/image dengan ekstensi PHP lengkap (pcntl, exif, intl, zip, pdo_pgsql, redis) dan jalankan migrasi + `composer verify` terhadap PostgreSQL nyata secara lokal.
-2. Tutup gerbang Fase 0 (rapikan utang teknis baseline bila perlu), lalu mulai **Fase 1 — Platform inti**: Identity (Fortify/Filament auth+2FA), RBAC Spatie Permission (teams/cabang), tenancy/branch scope, pengaturan, penomoran, audit, branding/atribusi, i18n, UI kerangka, palet perintah, wizard, kesehatan sistem.
+1. Siapkan env/image dev dengan ekstensi PHP lengkap (pcntl, exif, intl, zip, pdo_pgsql, redis) dan jalankan migrasi + `composer verify` terhadap PostgreSQL nyata.
+2. Lengkapi RBAC & tenancy Fase 1: konteks cabang global (switcher), scope `branch_id` & mode gabungan sah, cakupan/penyembunyian data, proteksi Owner, alur 2FA, dan uji otorisasi/isolas.
+3. Lengkapi wizard, pengaturan, penomoran terintegrasi, audit & kesehatan sistem, i18n/UI kerangka, lalu perbarui TRACEABILITY/gerbang Fase 1.
