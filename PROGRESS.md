@@ -35,17 +35,20 @@ Pembaruan: 2026-11-12 (Fase 0 — wiring & baseline fondasi)
 - Uji lokal (tanpa pdo_pgsql): `cp .env.testing .env.testing.local` opsional, atau jalankan `DB_CONNECTION=sqlite DB_DATABASE=:memory: composer verify`
 - Uji/CI target (PostgreSQL): set `DB_CONNECTION=pgsql` ke DB uji `*_test` lalu `composer verify`
 
-## Progres Fase 1 (awal)
+## Progres Fase 1 (berjalan)
 - [x] Skema/model inti platform: `branches`, `settings`, `document_sequences`, `branch_user`, konteks cabang aktif pada `users`; factories dasar.
 - [x] Spatie Permission `teams` diaktifkan (konteks cabang), seeder peran bawaan (Owner–Keuangan) & izin platform dasar; user aktif/nonaktif.
 - [x] Layanan inti awal: `Settings` (typed), `DocumentNumberService` (alokasi nomor transaksional/lock), `BranchContext`, `SetupState`.
-- [x] Panel Filament: login/reset/profile, branding PETORA, global search, nav grup, atribusi wajib footer "Powered by PETORA INDONESIA" (uji), middleware konteks tim permission & setup.
+- [x] Panel Filament: login/reset/profile, branding PETORA, global search, nav grup, atribusi wajib footer "Powered by PETORA INDONESIA" (uji), middleware konteks tim permission & setup; hook UI switcher cabang.
 - [x] Halaman/resource awal: `SetupWizard` (akun Owner+cabang+pengaturan awal), `SystemHealth`, `ManageSettings`, `BranchResource`, `UserResource`, `RoleResource`.
 - [x] i18n dasar `lang/id|en/app.php`; endpoint health `/.well-known/petora-health`.
-- [x] Uji Pest fitur platform inti (settings, penomoran, seeder peran, akses admin, atribusi) — total 13 tes/25 asersi lulus lokal (SQLite fallback D-0009).
-- [ ] Belum lengkap: integrasi Fortify/2FA penuh di alur panel, RBAC lengkap (cakupan data, batas/persetujuan/PIN, penyembunyian sensitif, matriks & "lihat sebagai peran", proteksi Owner komprehensif), tenancy/branch scope Eloquent & UI pindah cabang, penomoran per jenis/cabang terintegrasi, audit/log UI, i18n UI menyeluruh, palet perintah & kerangka UX lengkap, wizard komprehensif (pemeriksaan publik jujur, data contoh), kesehatan sistem lengkap, migrasi/uji PostgreSQL lokal.
+- [x] MFA/2FA app-based Filament diaktifkan di panel (kolom `app_authentication_*`, `User` implements MFA Filament); Fortify 2FA tetap terpasang (integrasi/kebijakan lengkap menyusul).
+- [x] Kontrol cabang awal: `POST /admin/branch-switch/{branch}` (`BranchSwitcherController`), `SetPermissionTeamContext` middleware, penyimpanan cabang aktif sesi/user.
+- [x] RBAC/policy awal: `UserPolicy`, `BranchPolicy`, `RolePolicy` terdaftar; `OwnerProtection` (invarian minimal satu Owner aktif), pengamanan hapus/nonaktifkan/pencabutan peran Owner di alur resource/page.
+- [x] Uji Pest fitur platform inti (settings, penomoran, seeder peran, akses admin, atribusi) — **13 tes/25 asersi lulus** lokal (SQLite fallback D-0009). CI hijau hingga commit `a6da5a3`; commit `9c3c7d6` baru dipush (CI in-progress saat dicatat).
+- [ ] Belum lengkap: kebijakan 2FA wajib per peran & alur Fortify/panel penuh, RBAC lengkap (cakupan data semua/cabang/milik sendiri, batas/persetujuan/PIN, pengecualian per orang + alasan, penyembunyian data sensitif server-side, matriks + pencarian/peringatan/"lihat sebagai peran", klon peran, proteksi Owner komprehensif di semua aksi/policy), tenancy/branch scope Eloquent `branch_id` & mode gabungan sah, penugasan peran per cabang end-to-end + uji isolasi, penomoran per jenis/cabang terintegrasi + uji konkurensi, audit/log UI, wizard komprehensif (pemeriksaan publik jujur, data contoh muat/hapus), kesehatan sistem lengkap, i18n UI menyeluruh, palet perintah & kerangka UX, migrasi/uji PostgreSQL lokal ber-ekstensi lengkap.
 
 ## Langkah berikutnya
-1. Siapkan env/image dev dengan ekstensi PHP lengkap (pcntl, exif, intl, zip, pdo_pgsql, redis) dan jalankan migrasi + `composer verify` terhadap PostgreSQL nyata.
-2. Lengkapi RBAC & tenancy Fase 1: konteks cabang global (switcher), scope `branch_id` & mode gabungan sah, cakupan/penyembunyian data, proteksi Owner, alur 2FA, dan uji otorisasi/isolas.
-3. Lengkapi wizard, pengaturan, penomoran terintegrasi, audit & kesehatan sistem, i18n/UI kerangka, lalu perbarui TRACEABILITY/gerbang Fase 1.
+1. Pastikan CI commit `9c3c7d6` hijau; siapkan env/image dev ber-ekstensi lengkap (pcntl, exif, intl, zip, pdo_pgsql, redis) dan jalankan migrasi + `composer verify` pada PostgreSQL nyata.
+2. Perkuat RBAC & tenancy: scope `branch_id`/`BelongsToBranch` + mode gabungan sah, penugasan peran per cabang (teams) end-to-end, cakupan/penyembunyian data, proteksi Owner menyeluruh, kebijakan 2FA per peran, dan uji otorisasi/isolasi.
+3. Lengkapi wizard (pemeriksaan app/DB/alamat publik jujur, data contoh), pengaturan & penomoran terintegrasi, audit/log UI, kesehatan sistem, i18n/kerangka UX & palet perintah, lalu perbarui TRACEABILITY dan tutup gerbang Fase 1.
