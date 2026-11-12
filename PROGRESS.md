@@ -19,8 +19,8 @@ Pembaruan: 2026-11-12 (Fase 0 — wiring & baseline fondasi)
 - [x] Kerangka modular monolith `modules/*` (19 modul, skeleton direktori + README) dan arch test Pest awal.
 - [x] CI GitHub Actions (`.github/workflows/ci.yml`) dengan PostgreSQL 17 & Redis; `docker-compose.yml` dev (app/db/redis/horizon/scheduler) dan `Dockerfile` dasar.
 - [x] `composer verify` hijau lokal (lint, analisis, uji, 6 tes/8 asersi) dengan fallback SQLite karena ekstensi `pdo_pgsql` tidak tersedia di lingkungan ini (lihat D-0009). **CI dikonfigurasi untuk PostgreSQL.**
-- [x] Commit fondasi dibuat (`523f7cc`) dan tag `v0.0.0` ditandai lokal.
-- [ ] Validasi hijau di CI GitHub (PostgreSQL+Redis) dan/atau lingkungan dengan ekstensi PHP lengkap (pcntl, exif, intl, zip, pdo_pgsql, redis).
+- [x] Commit fondasi dibuat (`523f7cc`) dan tag `v0.0.0` ditandai lokal; `main` dan tag sudah dipush.
+- [ ] Validasi hijau di CI GitHub (PostgreSQL+Redis) — run awal gagal karena `package-lock.json` belum ada/cache npm; perbaikan workflow & lockfile sedang dipush. Validasi dengan ekstensi PHP lengkap (pcntl, exif, intl, zip, pdo_pgsql, redis) tetap tertunda di lingkungan ini.
 
 ## Utang teknis disadari
 - Ekstensi PHP belum tersedia di lingkungan dev saat ini: `pcntl`, `exif`, `intl`, `zip`, `pdo_pgsql`/`pgsql`, `redis` (ext). Instal composer awal memakai `--ignore-platform-reqs`; image/Dockerfile sudah mendeklarasikan ekstensi target. Horizon (pcntl), medialibrary (exif), Filament/Spout (intl/zip), runtime (pgsql, redis ext) memerlukan ini.
