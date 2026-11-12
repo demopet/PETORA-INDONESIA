@@ -6,13 +6,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
+use App\Support\OwnerProtection;
 use BackedEnum;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Exceptions\Halt;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -52,6 +56,12 @@ class UserResource extends Resource
                 ->multiple()
                 ->preload()
                 ->searchable(),
+            Select::make('active_branch_id')
+                ->label('Cabang Aktif')
+                ->relationship('activeBranch', 'name')
+                ->searchable()
+                ->preload()
+                ->nullable(),
         ])->columns(2);
     }
 
@@ -62,10 +72,19 @@ class UserResource extends Resource
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('email')->searchable(),
                 IconColumn::make('is_active')->boolean(),
+                TextColumn::make('activeBranch.name')->label('Cabang Aktif')->toggleable(),
                 TextColumn::make('roles.name')->badge()->separator(','),
             ])
             ->actions([
                 EditAction::make(),
+                DeleteAction::make()
+                    ->before(function (User $record): void {
+                        if (! OwnerProtection::canDelete($record)) {
+                            Notification::make()->title('Minimal harus ada satu Owner aktif')->danger()->send();
+                            throw new Halt;
+                        }
+                    })
+                    ->visible(fn (User $record): bool => auth()->id() !== $record->id),
             ]);
     }
 

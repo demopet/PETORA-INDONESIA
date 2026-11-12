@@ -33,11 +33,13 @@ class EnsureSetupCompleted
             || str_starts_with($path, 'livewire');
 
         if (! $completed) {
-            if (! $isSetup && ! $isAuth) {
+            if ($isAuth) {
+                return redirect()->to('/admin/setup');
+            }
+            if (! $isSetup) {
                 return redirect()->to('/admin/setup');
             }
 
-            // Allow setup page to be accessed without prior login during initial install.
             return $next($request);
         }
 

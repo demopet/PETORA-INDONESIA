@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\BranchSwitcherController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -27,3 +28,8 @@ Route::get('/.well-known/petora-health', function () {
         'timestamp' => now()->toIso8601String(),
     ], $status === 'ok' ? 200 : 503);
 })->name('health');
+
+Route::middleware(['web', 'auth'])->group(function (): void {
+    Route::post('/admin/branch-switch/{branch}', [BranchSwitcherController::class, '__invoke'])
+        ->name('branch.switch');
+});

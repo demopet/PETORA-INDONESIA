@@ -17,11 +17,7 @@ class EditRole extends EditRecord
     {
         return [
             Actions\DeleteAction::make()
-                ->hidden(function (): bool {
-                    $record = $this->getRecord();
-
-                    return $record instanceof Role && $record->name === 'Owner';
-                }),
+                ->hidden(fn (): bool => $this->getRecord() instanceof Role && $this->getRecord()->name === 'Owner'),
         ];
     }
 }

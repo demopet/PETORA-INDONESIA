@@ -6,8 +6,11 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\SetupWizard;
 use App\Http\Middleware\EnsureSetupCompleted;
+use App\Http\Middleware\FilamentAuthenticate;
 use App\Http\Middleware\SetPermissionTeamContext;
-use Filament\Http\Middleware\Authenticate;
+use App\Models\User;
+use App\Support\BranchContext;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -23,6 +26,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
@@ -43,6 +47,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->globalSearch()
             ->sidebarCollapsibleOnDesktop()
+            ->multiFactorAuthentication([
+                AppAuthentication::make()->recoverable(),
+            ])
             ->navigationGroups([
                 NavigationGroup::make('Platform'),
                 NavigationGroup::make('Akses'),
@@ -71,11 +78,40 @@ class AdminPanelProvider extends PanelProvider
                 EnsureSetupCompleted::class,
             ])
             ->authMiddleware([
-                Authenticate::class,
+                FilamentAuthenticate::class,
             ], isPersistent: true)
             ->renderHook(
                 PanelsRenderHook::FOOTER,
                 fn (): string => Blade::render("@include('filament.hooks.attribution')")
+            )
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn (): string => $this->renderBranchSwitcher()
             );
+    }
+
+    protected function renderBranchSwitcher(): string
+    {
+        $user = Auth::user();
+        if (! $user instanceof User) {
+            return '';
+        }
+
+        try {
+            $branches = $user->branches()->where('is_active', true)->orderBy('name')->get();
+        } catch (\Throwable) {
+            return '';
+        }
+
+        if ($branches->count() < 1) {
+            return '';
+        }
+
+        $currentId = BranchContext::currentId();
+
+        return Blade::render('filament.hooks.branch-switcher', [
+            'branches' => $branches,
+            'currentId' => $currentId,
+        ]);
     }
 }
