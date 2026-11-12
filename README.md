@@ -476,43 +476,64 @@ LICENSE              ketentuan lisensi dan atribusi
 docs/                spesifikasi, keputusan, arsitektur, instalasi, operasi, panduan per peran
 
 Setelah teknologi dipilih dan produk selesai, agent memperbarui README ini dengan bagian "Memulai Cepat" (cara pasang satu perintah) dan "Teknologi yang Digunakan", tanpa menghapus isi produk di atas.
-
-
 ---
 
 Teknologi yang Digunakan
 
-- TypeScript dan Next.js App Router
-- PostgreSQL dengan Drizzle ORM
-- pg-boss untuk antrean berbasis PostgreSQL
-- Docker Compose; Caddy direncanakan untuk HTTPS otomatis pada deployment produksi
-- Vitest untuk tes otomatis
+- **Backend:** PHP 8.4, Laravel 13
+- **Panel admin/staf:** Filament 5
+- **Frontend interaktif:** Livewire 4
+- **UI:** Tailwind CSS 4 + komponen Filament
+- **Basis data:** PostgreSQL (Eloquent ORM)
+- **Autentikasi staf:** Laravel Fortify (kata sandi, reset, 2FA TOTP) terintegrasi dengan panel
+- **Autentikasi API & sesi terkait:** Laravel Sanctum
+- **RBAC:** Spatie Laravel Permission
+- **Multi-cabang (konteks & scope):** Spatie Laravel Multitenancy (satu basis data, isolasi `branch_id`) + Eloquent global scope
+- **Log aktivitas:** Spatie Laravel Activitylog
+- **Media:** Spatie Media Library (Cloudflare R2 utama, opsi disk lokal; privat via URL bertanda tangan)
+- **Antrean & pemantauan:** Laravel Queue + Laravel Horizon (Redis)
+- **Penjadwalan:** Laravel Scheduler
+- **Penyimpanan berkas:** Cloudflare R2 (kompatibel S3) dan disk lokal
+- **Pembayaran:** Midtrans dan Xendit (kontrak driver; sandbox/produksi)
+- **WhatsApp:** WhatsApp Cloud API resmi dan gateway pihak ketiga (kontrak driver)
+- **Email:** Laravel Mail + Resend dan SMTP
+- **Pengujian:** Pest PHP 4, PHPStan/Larastan, Laravel Pint
+- **Deployment:** Docker & Docker Compose (web server HTTPS otomatis, PostgreSQL, Redis, Horizon, scheduler)
+- **Version control:** Git + GitHub
+- **Arsitektur:** Modular Monolith (`modules/`)
+- **Mata uang:** Rupiah (IDR) saja
 
-Memulai Pengembangan
+Rincian versi, keputusan, dan alasan: `docs/DECISIONS.md` dan `docs/ARCHITECTURE.md`.
 
-Prasyarat: Node.js 24, npm, dan PostgreSQL. Jika Anda menjalankan aplikasi lokal dengan konfigurasi default di repository, DATABASE_URL dan TEST_DATABASE_URL akan otomatis memakai nilai Compose lokal yang telah disiapkan; Anda tetap bisa menimpanya lewat environment.
+Memulai Pengembangan (Fase 0 — fondasi)
 
-npm ci  
-npm run dev
+> Catatan: proyek sedang dalam tahap implementasi awal. Langkah di bawah ini menjadi acuan dan akan diperbarui saat fondasi aplikasi, migrasi, dan skrip `composer verify` selesai dikonfigurasi.
 
-Untuk menyiapkan PostgreSQL dan aplikasi melalui Docker:
+Prasyarat: PHP 8.4, Composer 2, Node.js 24, npm 11, PostgreSQL, Redis, serta Docker (disarankan untuk lingkungan yang konsisten).
 
+```bash
+# instal dependensi (setelah proyek Laravel diinisialisasi)
+composer install
+npm ci
+
+# salin dan lengkapi variabel lingkungan
+cp .env.example .env
+php artisan key:generate
+
+# jalankan layanan pendukung & aplikasi (pengembangan)
 docker compose up --build
 
-Jalankan npm run verify terhadap basis data tes terpisah. Untuk PostgreSQL tes lokal melalui Compose:
+# verifikasi (format, analisis statis, uji) terhadap basis data uji terpisah
+composer verify
+```
 
-docker compose --profile test up -d db-test  
-TEST_DATABASE_URL=postgresql://petora:petora_test@localhost:5433/petora_test npm run verify
+Kunci autentikasi dua langkah (2FA/TOTP)
 
-Variabel TEST_DATABASE_URL wajib menunjuk ke basis data yang namanya berakhiran _test; migrasi tes menolak nama lain. Konfigurasi dan kredensial pada compose.yaml hanya untuk pengembangan lokal; jangan gunakan untuk produksi. Panduan instalasi produksi satu perintah akan disediakan setelah alur deployment dibangun dan diuji.
-
-Kunci autentikasi dua langkah
-
-Sebelum mengaktifkan 2FA, sediakan TOTP_ENCRYPTION_KEY dari secret manager atau hasil openssl rand -hex 32 (64 karakter heksadesimal). Jangan commit kunci ini atau mengirimkannya ke klien. Simpan cadangan aman dan pertahankan nilainya: secret TOTP yang sudah tersimpan tidak dapat didekripsi jika kunci hilang atau berubah. Compose meneruskan variabel ini dari environment ke aplikasi; tanpa kunci, enrollment dan verifikasi 2FA ditolak dengan status konfigurasi yang jelas.
+Rahasia 2FA staf dienkripsi aplikasi. Sediakan `APP_KEY` yang kuat dan tercadangkan (dibuat saat pemasangan/inisialisasi); jangan commit kunci atau mengirimkannya ke klien. Kehilangan atau perubahan kunci enkripsi dapat membuat rahasia terenkripsi (termasuk kredensial integrasi dan 2FA) tidak dapat dibuka — dokumentasi operasi akan menjelaskan prosedur cadangan dan pemulihan.
 
 Pemeriksaan alamat publik
 
-Untuk mengaktifkan pemeriksaan alamat publik di wizard, atur PUBLIC_APP_URL ke origin HTTPS publik aplikasi, misalnya https://petora.example (tanpa path). Server akan meminta /.well-known/petora-health dengan batas waktu lima detik. Status ini membuktikan endpoint merespons dari server aplikasi, bukan bahwa seluruh penyedia webhook dapat menjangkaunya.
+Wizard pengaturan awal memeriksa aplikasi dan basis data dari browser. Jika `PUBLIC_APP_URL` diatur ke origin HTTPS publik (misalnya `https://petora.example`, tanpa path), server meminta endpoint health (mis. `/.well-known/petora-health`) dengan batas waktu singkat. Hasil ini membuktikan endpoint merespons dari server aplikasi, **bukan** bahwa seluruh penyedia webhook dapat menjangkaunya; integrasi webhook tetap memerlukan pengujian dari sisi penyedia.
 
 
 ---
