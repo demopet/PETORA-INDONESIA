@@ -17,14 +17,14 @@ Matriks fitur README → modul → status → uji. Status: belum | berjalan | se
 | 5 Struktur Bisnis: Pemilik dan Cabang | Data bersama: integrasi | - | belum | - |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Riwayat hewan ikut lintas cabang; pengaturan visibilitas rekam medis lintas cabang | - | belum | - |
 | 5 Struktur Bisnis: Pemilik dan Cabang | Transfer stok antar cabang: diminta, dikirim, diterima, selisih tercatat | - | belum | - |
-| 6 Peran dan Hak Akses | Peran buatan sendiri, hak akses rinci per modul/aksi | Identity | berjalan | tests/Feature/PlatformFoundationTest.php |
+| 6 Peran dan Hak Akses | Peran buatan sendiri, hak akses rinci per modul/aksi | Identity | berjalan | app/Support/PermissionCatalog.php, tests/Feature/PermissionCatalogTest.php |
 | 6 Peran dan Hak Akses | Klon dan sesuaikan peran | Identity | berjalan | app/Filament/Resources/RoleResource/Pages/ListRoles.php |
 | 6 Peran dan Hak Akses | Satu orang banyak peran di cabang berbeda | Identity | berjalan | app/Support/BranchRoleSync.php, tests/Feature/BranchRoleSyncTest.php |
 | 6 Peran dan Hak Akses | Cakupan data: semua cabang / cabang tertentu / milik sendiri | Identity/Platform | berjalan | app/Support/BranchContext.php, tests/Feature/BranchContextAndOwnershipTest.php |
 | 6 Peran dan Hak Akses | Batasan angka (batas diskon/refund per peran) | - | belum | - |
 | 6 Peran dan Hak Akses | Persetujuan atasan (PIN supervisor/persetujuan tercatat) | - | belum | - |
 | 6 Peran dan Hak Akses | Penyembunyian data sensitif per peran (harga beli/margin, komisi orang lain, catatan internal dokter, kontak) | - | belum | - |
-| 6 Peran dan Hak Akses | Pengecualian per orang dengan alasan tercatat | - | belum | - |
+| 6 Peran dan Hak Akses | Pengecualian per orang dengan alasan tercatat | Identity | berjalan | app/Models/PermissionException.php, tests/Feature/PermissionExceptionTest.php |
 | 6 Peran dan Hak Akses | Matriks hak akses, pencarian, peringatan berisiko tinggi, "lihat sebagai peran ini" | - | belum | - |
 | 6 Peran dan Hak Akses | Perlindungan Owner (tidak dihapus, minimal satu Owner aktif) | Identity | berjalan | app/Support/OwnerProtection.php, tests/Feature/BranchContextAndOwnershipTest.php |
 | 6 Peran dan Hak Akses | Peran bawaan: Owner, Super Admin, Manajer Cabang, Kasir, Resepsionis, Dokter Hewan, Paramedis, Groomer, Petugas Penitipan, Admin Gudang, Keuangan | Identity | berjalan | tests/Feature/PlatformFoundationTest.php |

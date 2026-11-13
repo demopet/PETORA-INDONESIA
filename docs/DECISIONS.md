@@ -1,3 +1,9 @@
+## D-0010 — Pengecualian izin per orang (grant/revoke) dengan alasan wajib + katalog izin terstruktur
+Tanggal: 2026-11-13   Fase: 1   Status: diterima
+Konteks: README §6 mensyaratkan pengecualian per orang (memberi/mencabut satu hak) dengan alasan wajib dan tercatat, serta daftar hak akses yang terstruktur dari modul/aksi. Spatie Permission mendukung izin langsung berbasis tim, tetapi tidak mendukung "mencabut" izin yang diberikan lewat peran, dan daftar izin sebelumnya ditulis datar di seeder.
+Keputusan: (1) `PermissionCatalog` menjadi sumber tunggal izin platform (dikelompokkan per modul, menandai izin berisiko tinggi) dan dipakai seeder. (2) Tabel `permission_exceptions` (user_id, permission_id, mode grant|revoke, reason, created_by) menyimpan pengecualian per orang; `User::checkPermissionTo()` memuat pengecualian lebih dulu sehingga revoke mengalahkan peran dan grant menambah izin di luar peran. Alasan wajib divalidasi di model (bukan hanya UI) dan setiap perubahan dicatat ke activity log.
+Alasan: Memenuhi README §6 tanpa mengubah stack inti; override `checkPermissionTo` adalah titik yang dipanggil Gate Spatie sehingga penegakan berlaku di seluruh `can()`/policy, bukan hanya UI. Pengecualian bersifat global per orang (lintas cabang) agar sederhana; cakupan per cabang dapat ditambah bila diperlukan.
+
 ## D-0009 — Baseline uji lokal: SQLite in-memory saat `pdo_pgsql` tidak tersedia, PostgreSQL di CI
 Tanggal: 2026-11-12   Fase: 0   Status: diterima (sementara)
 Konteks: Lingkungan kerja saat ini tidak menyediakan ekstensi PHP `pdo_pgsql/pgsql` (juga `pcntl`, `exif`, `intl`, `zip`, `redis` ext) sehingga uji lokal tidak dapat memakai PostgreSQL nyata. agent.md §8 mensyaratkan PostgreSQL sungguhan untuk uji.

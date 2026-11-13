@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\PermissionExceptionMode;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\Branch;
 use App\Models\User;
@@ -26,6 +27,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use UnitEnum;
 
@@ -103,6 +105,32 @@ class UserResource extends Resource
                         ->addActionLabel('Tambah Penugasan Cabang')
                         ->helperText('Simpan peran per cabang. Untuk cabang tanpa entri, peran akan dikosongkan.'),
                 ])->columns(1),
+            Section::make('Pengecualian Izin (per orang)')
+                ->description('Terapkan pengecualian pada satu izin untuk orang ini. "Cabut" memblokir izin yang diberikan lewat peran; "Berikan" menambahkan izin di luar peran. Setiap perubahan wajib disertai alasan dan tercatat di log audit.')
+                ->schema([
+                    Repeater::make('permissionExceptions')
+                        ->relationship()
+                        ->schema([
+                            Select::make('permission_id')
+                                ->label('Izin')
+                                ->options(fn (): array => Permission::query()->where('guard_name', 'web')->orderBy('name')->pluck('name', 'id')->all())
+                                ->required()
+                                ->searchable()
+                                ->preload(),
+                            Select::make('mode')
+                                ->label('Jenis')
+                                ->options(PermissionExceptionMode::options())
+                                ->required(),
+                            TextInput::make('reason')
+                                ->label('Alasan')
+                                ->required()
+                                ->maxLength(500),
+                        ])
+                        ->columns(3)
+                        ->reorderable(false)
+                        ->addActionLabel('Tambah Pengecualian')
+                        ->helperText('Satu izin hanya boleh memiliki satu pengecualian per orang.'),
+                ])->columns(1),
         ]);
     }
 
@@ -119,6 +147,11 @@ class UserResource extends Resource
                     ->label('Peran')
                     ->state(fn (User $record): string => self::rolesSummary($record))
                     ->wrap()
+                    ->toggleable(),
+                TextColumn::make('permission_exceptions_count')
+                    ->counts('permissionExceptions')
+                    ->label('Pengecualian')
+                    ->badge()
                     ->toggleable(),
             ])
             ->actions([

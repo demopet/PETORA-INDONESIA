@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Support\PermissionCatalog;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -17,20 +18,8 @@ class RolePermissionSeeder extends Seeder
 
         $guards = ['web'];
 
-        $permissions = [
-            'platform.settings.view', 'platform.settings.manage',
-            'platform.branches.view', 'platform.branches.manage', 'platform.branches.view_all',
-            'platform.users.view', 'platform.users.manage',
-            'platform.roles.view', 'platform.roles.manage',
-            'platform.audit.view',
-            'platform.health.view',
-            'platform.integrations.view', 'platform.integrations.manage',
-        ];
-
         foreach ($guards as $guard) {
-            foreach ($permissions as $permission) {
-                Permission::query()->firstOrCreate(['name' => $permission, 'guard_name' => $guard]);
-            }
+            PermissionCatalog::sync($guard);
 
             $owner = Role::query()->firstOrCreate(['name' => 'Owner', 'guard_name' => $guard]);
             $super = Role::query()->firstOrCreate(['name' => 'Super Admin', 'guard_name' => $guard]);

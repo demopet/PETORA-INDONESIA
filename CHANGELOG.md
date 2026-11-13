@@ -6,6 +6,8 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.1.0/) dan ve
 
 ## [Unreleased]
 ### Added
+- Fase 1: katalog izin terstruktur `PermissionCatalog` (dikelompokkan per modul, menandai izin berisiko tinggi) sebagai sumber tunggal izin platform; seeder peran memakai katalog.
+- Pengecualian izin per orang (grant/revoke) dengan alasan wajib dan audit: tabel `permission_exceptions`, model `PermissionException`, penegakan di `User::checkPermissionTo()`, UI repeater di `UserResource`, serta uji (grant/revoke, alasan wajib, audit, keunikan, render UI).
 - Fase 1 (awal): migrasi/model platform inti (branches, settings, document_sequences, branch_user, konteks cabang aktif), Settings helper, DocumentNumberService, BranchContext, SetupState.
 - RBAC awal: Spatie Permission teams aktif, seeder peran bawaan & izin platform, User dengan cabang/roles/is_active.
 - Panel Filament: middleware konteks tim & setup, atribusi wajib footer, halaman SetupWizard/SystemHealth/ManageSettings, resource Cabang/Pengguna/Peran.
