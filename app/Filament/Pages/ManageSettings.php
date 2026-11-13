@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Support\MultiFactorPolicy;
 use App\Support\Settings;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Spatie\Permission\Models\Role;
 use UnitEnum;
 
 /**
@@ -38,6 +41,7 @@ class ManageSettings extends Page
             'timezone' => Settings::get('app.timezone', 'Asia/Jakarta'),
             'locale' => Settings::get('app.locale', 'id'),
             'accent_color' => Settings::get('branding.accent_color', 'emerald'),
+            'mfa_required_roles' => MultiFactorPolicy::requiredRoles(),
         ]);
     }
 
@@ -45,22 +49,36 @@ class ManageSettings extends Page
     {
         return $schema
             ->components([
-                TextInput::make('app_name')->label('Nama Aplikasi')->required()->maxLength(255),
-                Select::make('timezone')->label('Zona Waktu')->options([
-                    'Asia/Jakarta' => 'Asia/Jakarta (WIB)',
-                    'Asia/Makassar' => 'Asia/Makassar (WITA)',
-                    'Asia/Jayapura' => 'Asia/Jayapura (WIT)',
-                ])->required(),
-                Select::make('locale')->label('Bahasa')->options([
-                    'id' => 'Bahasa Indonesia',
-                    'en' => 'English',
-                ])->required(),
-                Select::make('accent_color')->label('Warna Aksen')->options([
-                    'emerald' => 'Emerald',
-                    'blue' => 'Blue',
-                    'amber' => 'Amber',
-                    'rose' => 'Rose',
-                ])->required(),
+                Section::make('Umum')
+                    ->schema([
+                        TextInput::make('app_name')->label('Nama Aplikasi')->required()->maxLength(255),
+                        Select::make('timezone')->label('Zona Waktu')->options([
+                            'Asia/Jakarta' => 'Asia/Jakarta (WIB)',
+                            'Asia/Makassar' => 'Asia/Makassar (WITA)',
+                            'Asia/Jayapura' => 'Asia/Jayapura (WIT)',
+                        ])->required(),
+                        Select::make('locale')->label('Bahasa')->options([
+                            'id' => 'Bahasa Indonesia',
+                            'en' => 'English',
+                        ])->required(),
+                        Select::make('accent_color')->label('Warna Aksen')->options([
+                            'emerald' => 'Emerald',
+                            'blue' => 'Blue',
+                            'amber' => 'Amber',
+                            'rose' => 'Rose',
+                        ])->required(),
+                    ])->columns(2),
+                Section::make('Keamanan')
+                    ->description('Tentukan peran yang wajib mengaktifkan autentikasi multi-faktor (MFA/2FA) aplikasi. Pengguna dengan peran ini di cabang mana pun akan diwajibkan mengatur MFA.')
+                    ->schema([
+                        Select::make('mfa_required_roles')
+                            ->label('Peran Wajib MFA')
+                            ->options(fn (): array => Role::query()->where('guard_name', 'web')->orderBy('name')->pluck('name', 'name')->all())
+                            ->multiple()
+                            ->preload()
+                            ->searchable()
+                            ->helperText('Kosongkan untuk tidak mewajibkan MFA berdasarkan peran (MFA tetap dapat diaktifkan sukarela).'),
+                    ]),
             ])
             ->statePath('data');
     }
@@ -72,6 +90,7 @@ class ManageSettings extends Page
         Settings::set('app.timezone', $data['timezone'], 'string', 'localization');
         Settings::set('app.locale', $data['locale'], 'string', 'localization');
         Settings::set('branding.accent_color', $data['accent_color'], 'string', 'branding');
+        MultiFactorPolicy::setRequiredRoles(is_array($data['mfa_required_roles'] ?? null) ? $data['mfa_required_roles'] : []);
 
         app()->setLocale((string) $data['locale']);
         Notification::make()->title('Pengaturan disimpan')->success()->send();

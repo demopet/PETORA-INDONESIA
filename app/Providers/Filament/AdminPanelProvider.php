@@ -10,6 +10,7 @@ use App\Http\Middleware\FilamentAuthenticate;
 use App\Http\Middleware\SetPermissionTeamContext;
 use App\Models\User;
 use App\Support\BranchContext;
+use App\Support\MultiFactorPolicy;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -49,7 +50,11 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarCollapsibleOnDesktop()
             ->multiFactorAuthentication([
                 AppAuthentication::make()->recoverable(),
-            ])
+            ], isRequired: function (): bool {
+                $user = Auth::user();
+
+                return $user instanceof User && MultiFactorPolicy::isRequiredFor($user);
+            })
             ->navigationGroups([
                 NavigationGroup::make('Platform'),
                 NavigationGroup::make('Akses'),
