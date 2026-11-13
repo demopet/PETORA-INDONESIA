@@ -20,7 +20,7 @@ Matriks fitur README → modul → status → uji. Status: belum | berjalan | se
 | 6 Peran dan Hak Akses | Peran buatan sendiri, hak akses rinci per modul/aksi | Identity | berjalan | app/Support/PermissionCatalog.php, tests/Feature/PermissionCatalogTest.php |
 | 6 Peran dan Hak Akses | Klon dan sesuaikan peran | Identity | berjalan | app/Filament/Resources/RoleResource/Pages/ListRoles.php |
 | 6 Peran dan Hak Akses | Satu orang banyak peran di cabang berbeda | Identity | berjalan | app/Support/BranchRoleSync.php, tests/Feature/BranchRoleSyncTest.php |
-| 6 Peran dan Hak Akses | Cakupan data: semua cabang / cabang tertentu / milik sendiri | Identity/Platform | berjalan | app/Support/BranchContext.php, tests/Feature/BranchContextAndOwnershipTest.php |
+| 6 Peran dan Hak Akses | Cakupan data: semua cabang / cabang tertentu / milik sendiri | Identity/Platform | berjalan | app/Enums/DataScope.php, app/Support/DataScopeResolver.php, app/Models/Scopes/BranchScope.php, tests/Feature/DataScopeTest.php |
 | 6 Peran dan Hak Akses | Batasan angka (batas diskon/refund per peran) | - | belum | - |
 | 6 Peran dan Hak Akses | Persetujuan atasan (PIN supervisor/persetujuan tercatat) | - | belum | - |
 | 6 Peran dan Hak Akses | Penyembunyian data sensitif per peran (harga beli/margin, komisi orang lain, catatan internal dokter, kontak) | - | belum | - |

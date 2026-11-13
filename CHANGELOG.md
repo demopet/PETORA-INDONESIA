@@ -6,6 +6,7 @@ Format mengikuti [Keep a Changelog](https://keepachangelog.com/id/1.1.0/) dan ve
 
 ## [Unreleased]
 ### Added
+- Fase 1: cakupan data per peran (semua/cabang/milik sendiri) di `BranchScope` dengan enum `DataScope`, kolom `roles.data_scope`, `DataScopeResolver`, dukungan `created_by` pada `BelongsToBranch`, serta UI cakupan data di `RoleResource`; uji isolasi cabang/own/all (`tests/Feature/DataScopeTest.php`).
 - Fase 1: katalog izin terstruktur `PermissionCatalog` (dikelompokkan per modul, menandai izin berisiko tinggi) sebagai sumber tunggal izin platform; seeder peran memakai katalog.
 - Pengecualian izin per orang (grant/revoke) dengan alasan wajib dan audit: tabel `permission_exceptions`, model `PermissionException`, penegakan di `User::checkPermissionTo()`, UI repeater di `UserResource`, serta uji (grant/revoke, alasan wajib, audit, keunikan, render UI).
 - Fase 1 (awal): migrasi/model platform inti (branches, settings, document_sequences, branch_user, konteks cabang aktif), Settings helper, DocumentNumberService, BranchContext, SetupState.

@@ -39,6 +39,7 @@ class DocumentNumberService
                     'branch_id' => $branchId,
                     'period' => $period,
                     'last_number' => 0,
+                    'created_by' => auth()->id(),
                 ]);
                 $sequence->saveQuietly();
                 $sequence = DocumentSequence::query()

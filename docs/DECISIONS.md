@@ -1,3 +1,9 @@
+## D-0011 — Cakupan data per peran (semua/cabang/milik sendiri) di `BranchScope`
+Tanggal: 2026-11-13   Fase: 1   Status: diterima
+Konteks: README §6 mensyaratkan cakupan data per peran (semua cabang / cabang tertentu / milik sendiri). `BranchScope` sebelumnya hanya memfilter `branch_id`; belum ada konsep "milik sendiri".
+Keputusan: Tambah enum `DataScope` (all/branch/own) + kolom `data_scope` pada `roles` (default `branch`). `DataScopeResolver::effective()` mengambil cakupan terluas di antara peran pengguna pada tim izin aktif. `BranchScope` menerapkannya: `all` (dengan izin `platform.branches.view_all`) melewati filter; `branch` memfilter cabang aktif; `own` menambah filter `created_by` bila tabel model memiliki kolom tersebut (`BelongsToBranch::hasCreatedByColumn()`). Makro `withAllBranches()` dijaga: pengguna tanpa izin lihat-semua tidak dapat melewati scope. Model bercabang yang belum punya `created_by` (mis. sequence) jatuh ke perilaku cabang.
+Alasan: Infrastruktur yang dibutuhkan seluruh modul bercabang (kasir, kunjungan, stok). Karena `DataScopeResolver` membaca `roles.data_scope` yang bersifat global per nama peran, cakupan per cabang berbeda untuk peran yang sama belum didukung (dicatat sebagai batasan; dapat diperluas dengan role per-tim).
+
 ## D-0010 — Pengecualian izin per orang (grant/revoke) dengan alasan wajib + katalog izin terstruktur
 Tanggal: 2026-11-13   Fase: 1   Status: diterima
 Konteks: README §6 mensyaratkan pengecualian per orang (memberi/mencabut satu hak) dengan alasan wajib dan tercatat, serta daftar hak akses yang terstruktur dari modul/aksi. Spatie Permission mendukung izin langsung berbasis tim, tetapi tidak mendukung "mencabut" izin yang diberikan lewat peran, dan daftar izin sebelumnya ditulis datar di seeder.

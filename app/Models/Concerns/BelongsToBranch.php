@@ -9,6 +9,7 @@ use App\Models\Scopes\BranchScope;
 use App\Support\BranchContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * @mixin Model
@@ -24,6 +25,19 @@ trait BelongsToBranch
                 $model->setAttribute('branch_id', BranchContext::currentId());
             }
         });
+    }
+
+    /**
+     * Whether the underlying table has a `created_by` column. Used by the
+     * `own` data scope to restrict records to their creator.
+     */
+    public static function hasCreatedByColumn(): bool
+    {
+        try {
+            return Schema::hasColumn((new self)->getTable(), 'created_by');
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /** @return BelongsTo<Branch, $this> */

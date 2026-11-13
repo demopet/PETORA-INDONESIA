@@ -19,6 +19,7 @@ class DocumentSequence extends Model
         'branch_id',
         'period',
         'last_number',
+        'created_by',
     ];
 
     /** @return array<string, string> */

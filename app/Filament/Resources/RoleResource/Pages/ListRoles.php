@@ -36,10 +36,15 @@ class ListRoles extends ListRecords
                 ])
                 ->action(function (array $data): void {
                     $source = Role::query()->findOrFail($data['source_role_id']);
+                    $dataScope = (string) ($source->getAttribute('data_scope') ?? 'branch');
                     $new = Role::query()->firstOrCreate([
                         'name' => $data['new_name'],
                         'guard_name' => $source->guard_name,
+                    ], [
+                        'data_scope' => $dataScope,
                     ]);
+                    $new->setAttribute('data_scope', $dataScope);
+                    $new->save();
                     $new->syncPermissions($source->permissions()->pluck('name')->all());
 
                     Notification::make()

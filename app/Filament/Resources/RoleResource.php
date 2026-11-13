@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Enums\DataScope;
 use App\Filament\Resources\RoleResource\Pages;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -33,6 +35,12 @@ class RoleResource extends Resource
         return $schema->components([
             TextInput::make('name')->required()->maxLength(255),
             Hidden::make('guard_name')->default('web'),
+            Select::make('data_scope')
+                ->label('Cakupan Data')
+                ->options(DataScope::options())
+                ->default('branch')
+                ->required()
+                ->helperText('Menentukan data cabang mana yang dapat dilihat pengguna dengan peran ini. "Semua cabang" hanya efektif bila pengguna juga memiliki izin lihat semua cabang.'),
             CheckboxList::make('permissions')
                 ->relationship('permissions', 'name')
                 ->options(fn () => Permission::query()->orderBy('name')->pluck('name', 'id'))
@@ -47,6 +55,11 @@ class RoleResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('data_scope')
+                    ->label('Cakupan Data')
+                    ->formatStateUsing(fn (?string $state): string => DataScope::tryFrom((string) $state)?->label() ?? '-')
+                    ->badge()
+                    ->toggleable(),
                 TextColumn::make('permissions_count')->counts('permissions')->label('Izin'),
             ])
             ->actions([
