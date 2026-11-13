@@ -18,6 +18,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
@@ -30,6 +32,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     use HasRoles;
     use InteractsWithAppAuthentication;
     use InteractsWithAppAuthenticationRecovery;
+    use LogsActivity;
     use Notifiable;
     use TwoFactorAuthenticatable;
 
@@ -60,6 +63,15 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'two_factor_confirmed_at' => 'datetime',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('platform')
+            ->logOnly(['name', 'email', 'phone', 'active_branch_id', 'is_active'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
     }
 
     public function canAccessPanel(Panel $panel): bool

@@ -1,6 +1,6 @@
 # PROGRESS — PETORA INDONESIA
 
-Pembaruan: 2026-11-13 (Fase 1 — perbaikan konteks cabang, proteksi Owner, scoping urutan dokumen)
+Pembaruan: 2026-11-13 (Fase 1 — konteks cabang/izin tim, proteksi Owner, scoping urutan dokumen, audit log model awal)
 
 ## Fase aktif
 **Fase 1 — Platform inti** (berjalan, fondasi platform inti sebagian terimplementasi; baseline uji lokal hijau)
@@ -49,10 +49,11 @@ Pembaruan: 2026-11-13 (Fase 1 — perbaikan konteks cabang, proteksi Owner, scop
 - [x] RBAC/policy awal: `UserPolicy`, `BranchPolicy`, `RolePolicy` terdaftar; `OwnerProtection` (invarian minimal satu Owner aktif, sadar team-scoped `model_has_roles`), pengamanan hapus/nonaktifkan/pencabutan peran Owner di alur resource/page.
 - [x] **Konteks cabang & izin tim (2026-11-13):** `BranchContext::isAllBranches()` hanya sah dengan izin `platform.branches.view_all`; `permissionTeamId()` menyelesaikan tim izin saat mode gabungan (cabang aktif/pertama pengguna) agar peran/izin tim tetap efektif; `SetPermissionTeamContext` memakai `permissionTeamId()`.
 - [x] **Scoping bercabang awal:** `DocumentSequence` memakai `BelongsToBranch`; pengujian scope cabang dan perilaku nomor dokumen eksplisit lintas konteks (`tests/Feature/DocumentSequenceBranchScopeTest.php`).
-- [x] Uji Pest fitur platform inti & konteks/proteksi Owner/urutan dokumen — **19 tes/46 asersi lulus** lokal (SQLite fallback D-0009). Pint & PHPStan bersih lokal pada perubahan ini.
-- [ ] Belum lengkap: kebijakan 2FA wajib per peran & alur Fortify/panel penuh, RBAC lengkap (cakupan data semua/cabang/milik sendiri, batas/persetujuan/PIN, pengecualian per orang + alasan, penyembunyian data sensitif server-side, matriks + pencarian/peringatan/"lihat sebagai peran", klon peran, proteksi Owner komprehensif di semua aksi/policy), tenancy/branch scope Eloquent `branch_id` & mode gabungan sah end-to-end (seluruh model/tabel bercakupan), penugasan peran per cabang end-to-end + uji isolasi, penomoran per jenis/cabang terintegrasi + uji konkurensi, audit/log UI kaya, wizard komprehensif (pemeriksaan publik jujur, data contoh muat/hapus), kesehatan sistem lengkap, i18n UI menyeluruh, palet perintah & kerangka UX, migrasi/uji PostgreSQL lokal ber-ekstensi lengkap.
+- [x] **Audit log model awal:** `Branch`, `Setting`, `User` memakai `LogsActivity` (atribut terbatas, tanpa rahasia/kredensial/sandi) dengan uji `tests/Feature/ActivityLogTest.php`; `ActivityLogResource` baca-saja tersedia.
+- [x] Uji Pest fitur platform inti, konteks/proteksi Owner, urutan dokumen, dan audit log — **21 tes/54 asersi lulus** lokal (SQLite fallback D-0009). Pint & PHPStan bersih lokal pada perubahan terverifikasi.
+- [ ] Belum lengkap: kebijakan 2FA wajib per peran & alur Fortify/panel penuh, RBAC lengkap (cakupan data semua/cabang/milik sendiri, batas/persetujuan/PIN, pengecualian per orang + alasan, penyembunyian data sensitif server-side, matriks + pencarian/peringatan/"lihat sebagai peran", klon peran, proteksi Owner komprehensif di semua aksi/policy), tenancy/branch scope Eloquent `branch_id` & mode gabungan sah end-to-end (seluruh model/tabel bercakupan), penugasan peran per cabang end-to-end + uji isolasi, penomoran per jenis/cabang terintegrasi + uji konkurensi, audit/log UI & cakupan peristiwa lebih kaya, wizard komprehensif (pemeriksaan publik jujur, data contoh muat/hapus), kesehatan sistem lengkap, i18n UI menyeluruh, palet perintah & kerangka UX, migrasi/uji PostgreSQL lokal ber-ekstensi lengkap.
 
 ## Langkah berikutnya
-1. Commit & dorong perubahan terverifikasi (konteks cabang/izin tim, `OwnerProtection` teams-aware, `DocumentSequence` scoped, uji baru, perbaikan `phpstan.neon`) dan pastikan CI hijau.
+1. Dorong commit audit log model awal (`Branch/Setting/User`) dan pastikan CI hijau.
 2. Terapkan `BelongsToBranch`/scope pada model bercakupan cabang berikutnya secara end-to-end + uji isolasi & mode gabungan sah; perkuat penugasan peran per cabang (teams) di UI/resource & kebijakan 2FA per peran.
 3. Lengkapi RBAC (cakupan/penyembunyian data, batas/persetujuan/PIN, pengecualian beralasan, matriks/"lihat sebagai peran"), wizard (pemeriksaan app/DB/alamat publik jujur, data contoh), audit/log, kesehatan sistem, penomoran terintegrasi + uji konkurensi, i18n/UX/palet perintah; `composer verify` di PostgreSQL+ekstensi lengkap; perbarui `TRACEABILITY.md`.

@@ -7,10 +7,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Branch extends Model
 {
     use HasFactory;
+    use LogsActivity;
 
     /** @var list<string> */
     protected $fillable = [
@@ -33,6 +36,25 @@ class Branch extends Model
             'is_active' => 'boolean',
             'settings' => 'array',
         ];
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('platform')
+            ->logOnly([
+                'name',
+                'code',
+                'address',
+                'phone',
+                'email',
+                'timezone',
+                'is_active',
+                'receipt_header',
+                'receipt_footer',
+            ])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
     }
 
     /** @return BelongsToMany<User, $this> */
