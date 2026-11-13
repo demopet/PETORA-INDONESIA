@@ -6,9 +6,13 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ActivityLogResource\Pages;
 use BackedEnum;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Spatie\Activitylog\Models\Activity;
 use UnitEnum;
 
@@ -26,13 +30,31 @@ class ActivityLogResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('created_at')->label('Waktu')->dateTime()->sortable(),
-                TextColumn::make('log_name')->label('Log')->badge()->toggleable(),
-                TextColumn::make('event')->label('Peristiwa')->badge(),
-                TextColumn::make('description')->label('Deskripsi')->wrap()->limit(80),
-                TextColumn::make('causer.name')->label('Pelaku')->placeholder('-'),
-                TextColumn::make('subject_type')->label('Subjek')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('created_at')->label('Waktu')->dateTime()->sortable()->searchable(),
+                TextColumn::make('log_name')->label('Log')->badge()->sortable()->searchable(),
+                TextColumn::make('event')->label('Peristiwa')->badge()->sortable()->searchable(),
+                TextColumn::make('description')->label('Deskripsi')->wrap()->limit(80)->searchable(),
+                TextColumn::make('causer.name')->label('Pelaku')->placeholder('-')->searchable(),
+                TextColumn::make('subject_type')->label('Subjek')->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : '-')->searchable()->toggleable(),
                 TextColumn::make('subject_id')->label('ID Subjek')->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                SelectFilter::make('log_name')
+                    ->label('Log')
+                    ->options(fn (): array => Activity::query()->whereNotNull('log_name')->distinct()->orderBy('log_name')->pluck('log_name', 'log_name')->all()),
+                SelectFilter::make('event')
+                    ->label('Peristiwa')
+                    ->options(fn (): array => Activity::query()->whereNotNull('event')->distinct()->orderBy('event')->pluck('event', 'event')->all()),
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('from')->label('Dari'),
+                        DatePicker::make('until')->label('Sampai'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['from'] ?? null, fn (Builder $q, $date): Builder => $q->whereDate('created_at', '>=', $date))
+                            ->when($data['until'] ?? null, fn (Builder $q, $date): Builder => $q->whereDate('created_at', '<=', $date));
+                    }),
             ])
             ->defaultSort('created_at', 'desc')
             ->actions([]);
@@ -53,5 +75,10 @@ class ActivityLogResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['description', 'log_name', 'event'];
     }
 }

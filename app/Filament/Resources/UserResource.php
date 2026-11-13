@@ -24,6 +24,7 @@ use Filament\Support\Exceptions\Halt;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use UnitEnum;
@@ -55,10 +56,21 @@ class UserResource extends Resource
                     Toggle::make('is_active')->default(true),
                     Select::make('active_branch_id')
                         ->label('Cabang Aktif')
-                        ->relationship('activeBranch', 'name')
+                        ->options(function (?User $record): array {
+                            $query = Branch::query()->where('is_active', true)->orderBy('name');
+                            if ($record) {
+                                $branchIds = $record->branches()->pluck('branches.id')->all();
+                                if ($branchIds !== []) {
+                                    $query->whereIn('id', $branchIds);
+                                }
+                            }
+
+                            return $query->pluck('name', 'id')->all();
+                        })
                         ->searchable()
                         ->preload()
-                        ->nullable(),
+                        ->nullable()
+                        ->helperText('Pilih dari cabang yang dapat diakses pengguna.'),
                 ])->columns(2),
             Section::make('Cabang & Peran')
                 ->description('Penugasan peran bersifat per cabang (konteks tim). Pilih cabang yang dapat diakses pengguna dan tetapkan perannya di tiap cabang.')
@@ -151,5 +163,26 @@ class UserResource extends Resource
     public static function canViewAny(): bool
     {
         return (bool) auth()->user()?->can('platform.users.view');
+    }
+
+    /** @return array<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email', 'phone'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        /** @var User $record */
+        return $record->name;
+    }
+
+    public static function getGlobalSearchResultDetails(Model $record): array
+    {
+        /** @var User $record */
+        return array_filter([
+            'Email' => $record->email,
+            'Telepon' => $record->phone,
+        ]);
     }
 }

@@ -16,6 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class BranchResource extends Resource
@@ -68,5 +69,17 @@ class BranchResource extends Resource
     public static function canViewAny(): bool
     {
         return (bool) auth()->user()?->can('platform.branches.view');
+    }
+
+    /** @return array<string> */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'code'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        /** @var Branch $record */
+        return $record->name.' ('.$record->code.')';
     }
 }
