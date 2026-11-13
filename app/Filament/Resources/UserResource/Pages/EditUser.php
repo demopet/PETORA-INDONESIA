@@ -85,6 +85,11 @@ class EditUser extends EditRecord
 
         $branchIds = $record->branches()->pluck('branches.id')->map(fn ($id) => (int) $id)->all();
 
+        if ($record->active_branch_id && ! in_array((int) $record->active_branch_id, $branchIds, true)) {
+            $record->forceFill(['active_branch_id' => $branchIds[0] ?? null])->save();
+            $record = $record->fresh() ?? $record;
+        }
+
         if (! $record->active_branch_id) {
             $firstBranchId = $branchIds[0] ?? null;
             if ($firstBranchId) {
