@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -16,20 +17,33 @@ class OwnerProtection
     {
         $registrar = app(PermissionRegistrar::class);
         $originalTeam = $registrar->getPermissionsTeamId();
-        $registrar->setPermissionsTeamId(null);
 
         try {
+            $registrar->setPermissionsTeamId(null);
+            $registrar->forgetCachedPermissions();
+
             $role = Role::query()->where('name', self::ROLE)->where('guard_name', 'web')->first();
             if (! $role) {
                 return 0;
             }
 
-            return User::query()
+            $tableNames = config('permission.table_names');
+            $columnNames = config('permission.column_names');
+            $modelKey = $columnNames['model_morph_key'] ?? 'model_id';
+
+            return (int) User::query()
                 ->where('is_active', true)
-                ->whereHas('roles', fn ($q) => $q->where('roles.id', $role->id))
-                ->count();
+                ->whereIn('id', function ($query) use ($tableNames, $modelKey, $role): void {
+                    $query->from($tableNames['model_has_roles'])
+                        ->select($modelKey)
+                        ->where('role_id', $role->id)
+                        ->where('model_type', User::class);
+                })
+                ->distinct()
+                ->count('id');
         } finally {
             $registrar->setPermissionsTeamId($originalTeam);
+            $registrar->forgetCachedPermissions();
         }
     }
 
@@ -37,12 +51,28 @@ class OwnerProtection
     {
         $registrar = app(PermissionRegistrar::class);
         $originalTeam = $registrar->getPermissionsTeamId();
-        $registrar->setPermissionsTeamId(null);
 
         try {
-            return $user->hasRole(self::ROLE);
+            $registrar->setPermissionsTeamId(null);
+            $registrar->forgetCachedPermissions();
+
+            $role = Role::query()->where('name', self::ROLE)->where('guard_name', 'web')->first();
+            if (! $role) {
+                return false;
+            }
+
+            $tableNames = config('permission.table_names');
+            $columnNames = config('permission.column_names');
+            $modelKey = $columnNames['model_morph_key'] ?? 'model_id';
+
+            return DB::table($tableNames['model_has_roles'])
+                ->where('role_id', $role->id)
+                ->where('model_type', User::class)
+                ->where($modelKey, $user->getKey())
+                ->exists();
         } finally {
             $registrar->setPermissionsTeamId($originalTeam);
+            $registrar->forgetCachedPermissions();
         }
     }
 

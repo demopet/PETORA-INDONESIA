@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\DocumentSequence;
+use App\Models\Scopes\BranchScope;
 use Illuminate\Support\Facades\DB;
 
 class DocumentNumberService
@@ -23,7 +24,9 @@ class DocumentNumberService
         $includePeriod = (bool) ($options['include_period'] ?? true);
 
         return DB::transaction(function () use ($documentType, $branchId, $period, $prefix, $separator, $pad, $includePeriod): string {
+            // Bypass branch global scope: sequence allocation must target the explicit branch_id.
             $sequence = DocumentSequence::query()
+                ->withoutGlobalScope(BranchScope::class)
                 ->where('document_type', $documentType)
                 ->where('branch_id', $branchId)
                 ->where('period', $period)
@@ -37,8 +40,12 @@ class DocumentNumberService
                     'period' => $period,
                     'last_number' => 0,
                 ]);
-                $sequence->save();
-                $sequence = DocumentSequence::query()->whereKey($sequence->id)->lockForUpdate()->firstOrFail();
+                $sequence->saveQuietly();
+                $sequence = DocumentSequence::query()
+                    ->withoutGlobalScope(BranchScope::class)
+                    ->whereKey($sequence->id)
+                    ->lockForUpdate()
+                    ->firstOrFail();
             }
 
             $sequence->last_number++;

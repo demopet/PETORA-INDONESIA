@@ -7,7 +7,6 @@ namespace App\Http\Middleware;
 use App\Support\BranchContext;
 use Closure;
 use Illuminate\Http\Request;
-use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetPermissionTeamContext
@@ -15,7 +14,7 @@ class SetPermissionTeamContext
     /** @param  Closure(Request): Response  $next */
     public function handle(Request $request, Closure $next): Response
     {
-        app(PermissionRegistrar::class)->setPermissionsTeamId(BranchContext::currentId());
+        BranchContext::syncPermissionTeam(BranchContext::permissionTeamId());
 
         return $next($request);
     }

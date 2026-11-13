@@ -1,6 +1,6 @@
 # PROGRESS — PETORA INDONESIA
 
-Pembaruan: 2026-11-12 (Fase 0 — wiring & baseline fondasi)
+Pembaruan: 2026-11-13 (Fase 1 — perbaikan konteks cabang, proteksi Owner, scoping urutan dokumen)
 
 ## Fase aktif
 **Fase 1 — Platform inti** (berjalan, fondasi platform inti sebagian terimplementasi; baseline uji lokal hijau)
@@ -26,29 +26,33 @@ Pembaruan: 2026-11-12 (Fase 0 — wiring & baseline fondasi)
 - Ekstensi PHP belum tersedia di lingkungan dev saat ini: `pcntl`, `exif`, `intl`, `zip`, `pdo_pgsql`/`pgsql`, `redis` (ext). Instal composer awal memakai `--ignore-platform-reqs`; image/Dockerfile sudah mendeklarasikan ekstensi target. Horizon (pcntl), medialibrary (exif), Filament/Spout (intl/zip), runtime (pgsql, redis ext) memerlukan ini.
 - Baseline uji lokal memakai SQLite in-memory (D-0009, `.env.testing`) karena `pdo_pgsql` absen; phpunit env DB tidak dipaksa agar CI dapat override ke PostgreSQL. Uji konkurensi/constraint PostgreSQL wajib dijalankan di CI/env siap.
 - Migrasi belum dieksekusi terhadap PostgreSQL di lingkungan ini; `migrate:status` lokal gagal karena driver pgsql tidak ada (kontainer postgres tersedia).
+- `phpstan.neon`: ignore `method.childParameterType` untuk `BranchScope` (kontrak Scope Eloquent); ignore `trait.unused` untuk `BelongsToBranch` dihapus setelah trait dipakai `DocumentSequence`.
 
 ## Hambatan terbuka
 - Tidak ada kredensial nyata penyedia (Midtrans, Xendit, Meta/WhatsApp, R2, Resend). Driver palsu/sandbox & HTTP fake (A-0006).
 
 ## Perintah penting
 - `composer install && npm ci && cp .env.example .env && php artisan key:generate`
-- Uji lokal (tanpa pdo_pgsql): `cp .env.testing .env.testing.local` opsional, atau jalankan `DB_CONNECTION=sqlite DB_DATABASE=:memory: composer verify`
+- Uji lokal (tanpa pdo_pgsql): `DB_CONNECTION=sqlite DB_DATABASE=:memory: php artisan test --compact`
+- `vendor/bin/pint --test` dan `vendor/bin/phpstan analyse --memory-limit=1G`
 - Uji/CI target (PostgreSQL): set `DB_CONNECTION=pgsql` ke DB uji `*_test` lalu `composer verify`
 
 ## Progres Fase 1 (berjalan)
 - [x] Skema/model inti platform: `branches`, `settings`, `document_sequences`, `branch_user`, konteks cabang aktif pada `users`; factories dasar.
 - [x] Spatie Permission `teams` diaktifkan (konteks cabang), seeder peran bawaan (Owner–Keuangan) & izin platform dasar; user aktif/nonaktif.
-- [x] Layanan inti awal: `Settings` (typed), `DocumentNumberService` (alokasi nomor transaksional/lock), `BranchContext`, `SetupState`.
+- [x] Layanan inti awal: `Settings` (typed), `DocumentNumberService` (alokasi nomor transaksional/lock, bypass `BranchScope` untuk target `branch_id` eksplisit), `BranchContext`, `SetupState`.
 - [x] Panel Filament: login/reset/profile, branding PETORA, global search, nav grup, atribusi wajib footer "Powered by PETORA INDONESIA" (uji), middleware konteks tim permission & setup; hook UI switcher cabang.
 - [x] Halaman/resource awal: `SetupWizard` (akun Owner+cabang+pengaturan awal), `SystemHealth`, `ManageSettings`, `BranchResource`, `UserResource`, `RoleResource`.
 - [x] i18n dasar `lang/id|en/app.php`; endpoint health `/.well-known/petora-health`.
 - [x] MFA/2FA app-based Filament diaktifkan di panel (kolom `app_authentication_*`, `User` implements MFA Filament); Fortify 2FA tetap terpasang (integrasi/kebijakan lengkap menyusul).
 - [x] Kontrol cabang awal: `POST /admin/branch-switch/{branch}` (`BranchSwitcherController`), `SetPermissionTeamContext` middleware, penyimpanan cabang aktif sesi/user.
-- [x] RBAC/policy awal: `UserPolicy`, `BranchPolicy`, `RolePolicy` terdaftar; `OwnerProtection` (invarian minimal satu Owner aktif), pengamanan hapus/nonaktifkan/pencabutan peran Owner di alur resource/page.
-- [x] Uji Pest fitur platform inti (settings, penomoran, seeder peran, akses admin, atribusi) — **13 tes/25 asersi lulus** lokal (SQLite fallback D-0009). CI hijau hingga commit `a6da5a3`; commit `9c3c7d6` baru dipush (CI in-progress saat dicatat).
-- [ ] Belum lengkap: kebijakan 2FA wajib per peran & alur Fortify/panel penuh, RBAC lengkap (cakupan data semua/cabang/milik sendiri, batas/persetujuan/PIN, pengecualian per orang + alasan, penyembunyian data sensitif server-side, matriks + pencarian/peringatan/"lihat sebagai peran", klon peran, proteksi Owner komprehensif di semua aksi/policy), tenancy/branch scope Eloquent `branch_id` & mode gabungan sah, penugasan peran per cabang end-to-end + uji isolasi, penomoran per jenis/cabang terintegrasi + uji konkurensi, audit/log UI, wizard komprehensif (pemeriksaan publik jujur, data contoh muat/hapus), kesehatan sistem lengkap, i18n UI menyeluruh, palet perintah & kerangka UX, migrasi/uji PostgreSQL lokal ber-ekstensi lengkap.
+- [x] RBAC/policy awal: `UserPolicy`, `BranchPolicy`, `RolePolicy` terdaftar; `OwnerProtection` (invarian minimal satu Owner aktif, sadar team-scoped `model_has_roles`), pengamanan hapus/nonaktifkan/pencabutan peran Owner di alur resource/page.
+- [x] **Konteks cabang & izin tim (2026-11-13):** `BranchContext::isAllBranches()` hanya sah dengan izin `platform.branches.view_all`; `permissionTeamId()` menyelesaikan tim izin saat mode gabungan (cabang aktif/pertama pengguna) agar peran/izin tim tetap efektif; `SetPermissionTeamContext` memakai `permissionTeamId()`.
+- [x] **Scoping bercabang awal:** `DocumentSequence` memakai `BelongsToBranch`; pengujian scope cabang dan perilaku nomor dokumen eksplisit lintas konteks (`tests/Feature/DocumentSequenceBranchScopeTest.php`).
+- [x] Uji Pest fitur platform inti & konteks/proteksi Owner/urutan dokumen — **19 tes/46 asersi lulus** lokal (SQLite fallback D-0009). Pint & PHPStan bersih lokal pada perubahan ini.
+- [ ] Belum lengkap: kebijakan 2FA wajib per peran & alur Fortify/panel penuh, RBAC lengkap (cakupan data semua/cabang/milik sendiri, batas/persetujuan/PIN, pengecualian per orang + alasan, penyembunyian data sensitif server-side, matriks + pencarian/peringatan/"lihat sebagai peran", klon peran, proteksi Owner komprehensif di semua aksi/policy), tenancy/branch scope Eloquent `branch_id` & mode gabungan sah end-to-end (seluruh model/tabel bercakupan), penugasan peran per cabang end-to-end + uji isolasi, penomoran per jenis/cabang terintegrasi + uji konkurensi, audit/log UI kaya, wizard komprehensif (pemeriksaan publik jujur, data contoh muat/hapus), kesehatan sistem lengkap, i18n UI menyeluruh, palet perintah & kerangka UX, migrasi/uji PostgreSQL lokal ber-ekstensi lengkap.
 
 ## Langkah berikutnya
-1. Pastikan CI commit `9c3c7d6` hijau; siapkan env/image dev ber-ekstensi lengkap (pcntl, exif, intl, zip, pdo_pgsql, redis) dan jalankan migrasi + `composer verify` pada PostgreSQL nyata.
-2. Perkuat RBAC & tenancy: scope `branch_id`/`BelongsToBranch` + mode gabungan sah, penugasan peran per cabang (teams) end-to-end, cakupan/penyembunyian data, proteksi Owner menyeluruh, kebijakan 2FA per peran, dan uji otorisasi/isolasi.
-3. Lengkapi wizard (pemeriksaan app/DB/alamat publik jujur, data contoh), pengaturan & penomoran terintegrasi, audit/log UI, kesehatan sistem, i18n/kerangka UX & palet perintah, lalu perbarui TRACEABILITY dan tutup gerbang Fase 1.
+1. Commit & dorong perubahan terverifikasi (konteks cabang/izin tim, `OwnerProtection` teams-aware, `DocumentSequence` scoped, uji baru, perbaikan `phpstan.neon`) dan pastikan CI hijau.
+2. Terapkan `BelongsToBranch`/scope pada model bercakupan cabang berikutnya secara end-to-end + uji isolasi & mode gabungan sah; perkuat penugasan peran per cabang (teams) di UI/resource & kebijakan 2FA per peran.
+3. Lengkapi RBAC (cakupan/penyembunyian data, batas/persetujuan/PIN, pengecualian beralasan, matriks/"lihat sebagai peran"), wizard (pemeriksaan app/DB/alamat publik jujur, data contoh), audit/log, kesehatan sistem, penomoran terintegrasi + uji konkurensi, i18n/UX/palet perintah; `composer verify` di PostgreSQL+ekstensi lengkap; perbarui `TRACEABILITY.md`.
